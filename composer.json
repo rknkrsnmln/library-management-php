@@ -1,0 +1,28 @@
+{
+  "name": "reikan/library-php-mvc",
+  "description": "Library PHP MVC",
+  "type": "project",
+  "authors": [
+    {
+      "name": "rknkrsnmln",
+      "email": "reikan.kresna@gmail.com"
+    }
+  ],
+  "require": {
+    "php": ">=8.0",
+    "ext-pdo": "*"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "11.5.43"
+  },
+  "autoload": {
+    "psr-4": {
+      "Library\\PHP\\MVC\\": "app"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Library\\PHP\\MVC\\": "test"
+    }
+  }
+}
