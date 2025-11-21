@@ -13,6 +13,9 @@
                 <div class="form-floating mb-3">
                     <a href="/users/login" class="w-100 btn btn-lg btn-primary">Login</a>
                 </div>
+                <div class="form-floating mb-3">
+                    <a href="/books" class="w-100 btn btn-lg btn-primary">Book List</a>
+                </div>
             </div>
         </div>
     </div>

@@ -6,11 +6,6 @@
 
 <form method="POST" action="/books/add">
 
-    <!--    <div class="mb-3">-->
-    <!--        <label for="id">ID</label>-->
-    <!--        <input type="text" name="id" id="id" class="form-control" required>-->
-    <!--    </div>-->
-
     <div class="mb-3">
         <label for="title">Title</label>
         <input type="text" name="title" id="title" class="form-control" required>

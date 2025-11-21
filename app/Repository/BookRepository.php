@@ -87,7 +87,7 @@ class BookRepository
     }
 
     /**
-     * Delete a book by its ID.
+     * Delete a book by its ID, ensuring no borrowings exist for the book.
      *
      * @param string $bookId
      * @return bool Returns true if the book was deleted, false otherwise
@@ -96,7 +96,6 @@ class BookRepository
     {
         $statement = $this->connection->prepare("DELETE FROM books WHERE id = ?");
         $statement->execute([$bookId]);
-        $statement->closeCursor();
         return $statement->rowCount() > 0;
     }
 

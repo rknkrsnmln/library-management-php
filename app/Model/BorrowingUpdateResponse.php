@@ -4,7 +4,8 @@ namespace Library\PHP\MVC\Model;
 
 use Library\PHP\MVC\Domain\Borrowing;
 
-class BorrowingResponse
+class BorrowingUpdateResponse
 {
     public Borrowing $borrowing;
+
 }

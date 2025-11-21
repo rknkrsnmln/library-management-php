@@ -3,10 +3,13 @@
 namespace Library\PHP\MVC\Service;
 
 use Exception;
+use Library\PHP\MVC\Config\Database;
 use Library\PHP\MVC\Domain\Borrowing;
 use Library\PHP\MVC\Model\BorrowingRequest;
 use Library\PHP\MVC\Model\BorrowingUpdateRequest;
 use Library\PHP\MVC\Repository\BorrowingRepository;
+use PDOException;
+use Throwable;
 
 class BorrowingService
 {
@@ -19,45 +22,114 @@ class BorrowingService
 
     /**
      * @throws Exception
+     * @throws Throwable
      */
     public function createBorrowing(BorrowingRequest $request): Borrowing
     {
-        // Validate the request (e.g., check that userId and bookId exist)
+        // Basic validation
         if (empty($request->userId) || empty($request->bookId) || empty($request->borrowDate)) {
             throw new Exception("User ID, Book ID, and Borrow Date cannot be empty.");
         }
-        $newBorrowing = new Borrowing();
-        $newBorrowing->id = uniqid();
-        $newBorrowing->userId = $request->userId;
-        $newBorrowing->bookId = $request->bookId;
-        $newBorrowing->borrowDate = $request->borrowDate;
-        $newBorrowing->returnDate = $request->returnDate;
-        $newBorrowing->returned = $request->returned;
 
-        return $this->borrowingRepository->create($newBorrowing);
+        try {
+            Database::beginTransaction();
+
+            $borrowing = new Borrowing();
+            $borrowing->id = uniqid();
+            $borrowing->userId = $request->userId;
+            $borrowing->bookId = $request->bookId;
+            $borrowing->borrowDate = $request->borrowDate;
+            $borrowing->returnDate = $request->returnDate;
+            $borrowing->returned = $request->returned;
+
+            $saved = $this->borrowingRepository->create($borrowing);
+
+            Database::commitTransaction();
+            return $saved;
+
+        } catch (PDOException $e) {
+            Database::rollbackTransaction();
+            throw new Exception("Database error while creating borrowing entry.", 0, $e);
+        } catch (Throwable $e) {
+            Database::rollbackTransaction();
+            throw $e;
+        }
     }
 
+    /**
+     * Fetch one borrowing record by ID.
+     * @throws Exception
+     */
     public function getBorrowingById(string $id): ?Borrowing
     {
-        return $this->borrowingRepository->findById($id);
+        try {
+            return $this->borrowingRepository->findById($id);
+        } catch (PDOException $e) {
+            throw new Exception("Database error while fetching borrowing #{$id}.", 0, $e);
+        }
     }
 
+    /**
+     * @throws Throwable
+     * @throws Exception
+     */
     public function updateBorrowing(BorrowingUpdateRequest $updateRequest): void
     {
-        $updatedBorrowing = new Borrowing();
-        $updatedBorrowing->returned = $updateRequest->returned;
-        $updatedBorrowing->returnDate = $updateRequest->returnDate;
-        $updatedBorrowing->borrowDate = $updateRequest->borrowDate;
-        $this->borrowingRepository->update($updatedBorrowing);
+        try {
+            Database::beginTransaction();
+
+            $borrowing = new Borrowing();
+            $borrowing->id = $updateRequest->id;
+            $borrowing->borrowDate = $updateRequest->borrowDate;
+            $borrowing->returnDate = $updateRequest->returnDate;
+            $borrowing->returned = $updateRequest->returned;
+            $borrowing->userId = $updateRequest->userId;
+            $borrowing->bookId = $updateRequest->bookId;
+
+            $this->borrowingRepository->update($borrowing);
+
+            Database::commitTransaction();
+        } catch (PDOException $e) {
+            Database::rollbackTransaction();
+            throw new Exception("Database error while updating borrowing #{$updateRequest->id}.", 0, $e);
+        } catch (Throwable $e) {
+            Database::rollbackTransaction();
+            throw $e;
+        }
     }
 
+    /**
+     * Delete a borrowing entry.
+     * @throws Exception
+     * @throws Throwable
+     */
     public function deleteBorrowing(string $id): void
     {
-        $this->borrowingRepository->delete($id);
+        try {
+            Database::beginTransaction();
+
+            $this->borrowingRepository->delete($id);
+
+            Database::commitTransaction();
+        } catch (PDOException $e) {
+            Database::rollbackTransaction();
+            throw new Exception("Database error while deleting borrowing #{$id}.", 0, $e);
+        } catch (Throwable $e) {
+            Database::rollbackTransaction();
+            throw $e;
+        }
     }
 
+    /**
+     * Get all borrowing entries.
+     * @throws Exception
+     */
     public function getAllBorrowings(): array
     {
-        return $this->borrowingRepository->findAll();
+        try {
+            return $this->borrowingRepository->findAll();
+        } catch (PDOException $e) {
+            throw new Exception("Database error while fetching all borrowings.", 0, $e);
+        }
     }
 }

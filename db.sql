@@ -1,10 +1,12 @@
-CREATE DATABASE library_management;
+DROP DATABASE IF EXISTS library_management_test;
+DROP DATABASE IF EXISTS library_management;
+
 CREATE DATABASE library_management_test;
+CREATE DATABASE library_management;
 
--- Use the main database
-USE php_login_management;
+USE library_management_test;
 
--- Users table with status and role
+-- Create the users table
 CREATE TABLE users
 (
     id       VARCHAR(255) PRIMARY KEY,
@@ -14,29 +16,25 @@ CREATE TABLE users
     role     ENUM ('member', 'admin')     DEFAULT 'member'
 ) ENGINE = InnoDB;
 
--- Sessions table
+-- Create the sessions table (with a foreign key to users)
 CREATE TABLE sessions
 (
     id      VARCHAR(255) PRIMARY KEY,
     user_id VARCHAR(255) NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES users (id)
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 ) ENGINE = InnoDB;
 
--- Books table
+-- Create the books table
 CREATE TABLE books
 (
     id               VARCHAR(255) PRIMARY KEY,
     title            VARCHAR(255) NOT NULL,
     author           VARCHAR(255),
     publication_year INT,
-    available        BOOLEAN DEFAULT TRUE
+    available        TINYINT(1) DEFAULT 1 -- Fixed to be a boolean-like value
 ) ENGINE = InnoDB;
 
--- Make sure that available is int not string or else
-ALTER TABLE books
-    MODIFY COLUMN available TINYINT(1) DEFAULT 1;
-
--- Borrowings table (relationship between users and books)
+-- Create the borrowings table with foreign keys
 CREATE TABLE borrowings
 (
     id          VARCHAR(255) PRIMARY KEY,
@@ -45,13 +43,6 @@ CREATE TABLE borrowings
     borrow_date DATETIME DEFAULT CURRENT_TIMESTAMP,
     return_date DATETIME     NULL,
     returned    BOOLEAN  DEFAULT FALSE,
-    FOREIGN KEY (user_id) REFERENCES users (id),
-    FOREIGN KEY (book_id) REFERENCES books (id)
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+    FOREIGN KEY (book_id) REFERENCES books (id) ON DELETE CASCADE
 ) ENGINE = InnoDB;
-
-INSERT INTO books (id, title, author, publication_year, available)
-VALUES ('B001', 'The Great Gatsby', 'F. Scott Fitzgerald', 1925, TRUE),
-       ('B002', '1984', 'George Orwell', 1949, TRUE),
-       ('B003', 'To Kill a Mockingbird', 'Harper Lee', 1960, TRUE),
-       ('B004', 'Pride and Prejudice', 'Jane Austen', 1813, TRUE),
-       ('B005', 'The Catcher in the Rye', 'J.D. Salinger', 1951, TRUE);

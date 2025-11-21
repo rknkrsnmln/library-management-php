@@ -24,7 +24,7 @@ class MustBeAdmin implements Middleware
     {
         $user = $this->sessionService->current();
         if ($user->role !== "admin") {
-            View::redirect('/users/login');
+            View::redirectError('/', 'You are not authorized to access this page.');
         }
     }
 

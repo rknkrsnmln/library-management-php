@@ -2,6 +2,7 @@
 
 namespace Library\PHP\MVC\Controller;
 
+use Exception;
 use Library\PHP\MVC\App\View;
 use Library\PHP\MVC\Config\Database;
 use Library\PHP\MVC\Repository\SessionRepository;
@@ -25,7 +26,7 @@ class HomeController
     function index(): void
     {
         $user = $this->sessionService->current();
-        if ($user == null) {
+        if (empty($user)) {
             View::render('Home/index', [
                 "title" => "PHP Login Management"
             ]);
@@ -37,6 +38,14 @@ class HomeController
                 ]
             ]);
         }
+    }
+
+    /**
+     * @throws Exception
+     */
+    function fiveHundredResponse(): void
+    {
+        throw new Exception("Test 123");
     }
 
 }

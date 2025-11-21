@@ -78,7 +78,7 @@ class BookController
                 ]);
             }
         } catch (\Exception $e) {
-            View::renderNew('Error/error', [
+            View::renderNew('Book/view', [
                 'title' => 'View Book',
                 'error' => $e->getMessage()
             ]);
@@ -124,20 +124,11 @@ class BookController
     public function deleteBook(string $bookId): void
     {
         try {
-            $success = $this->bookService->deleteBook($bookId);
-            if ($success) {
-                View::redirect('/books');
-            } else {
-                View::renderNew('Error/error', [
-                    'title' => 'View Book',
-                    'error' => 'Failed to delete the book.'
-                ]);
-            }
+            $this->bookService->deleteBook($bookId);
+            View::redirect('/books');
+
         } catch (\Exception $e) {
-            View::renderNew('Error/error', [
-                'title' => 'View Book',
-                'error' => $e->getMessage()
-            ]);
+            View::redirectError('/books', $e->getMessage());
         }
     }
 
@@ -146,24 +137,31 @@ class BookController
         try {
             $book = $this->bookService->getBookById($bookId);
             $user = $this->sessionService->current();
+
+            // Check if the book is found
             if ($book) {
                 View::renderNew('Book/edit', [
                     'title' => 'Update Book',
                     'book' => $book,
-                    "user" => [
-                        "name" => $user->name ?? 'Guest'
+                    'user' => [
+                        'name' => $user->name
                     ]
                 ]);
             } else {
-                View::renderNew('Book/edit', [
-                    'title' => 'View Book',
-                    'error' => 'Book not found.'
-                ]);
+                // Provide an empty book object or array if not found
+//                View::renderNew('Book/edit', [
+//                    'title' => 'View Book',
+//                    'error' => 'Book not found.',
+//                    'book' => (object)[] // Safe empty object for view
+//                ]);
+                View::redirectError('/books', 'Book not found.');
             }
         } catch (\Exception $e) {
-            View::renderNew('Book/edit', [
-                'error' => $e->getMessage()
-            ]);
+//            View::renderNew('Book/edit', [
+//                'error' => $e->getMessage(),
+//                'book' => (object)[] // Ensure book is always set, even in error
+//            ]);
+            View::redirectError('/books', $e->getMessage());
         }
     }
 
@@ -171,11 +169,12 @@ class BookController
     {
         $request = new BookUpdateRequest();
         $request->id = $_POST['id'];
-        $request->title = $_POST['title'];
         $request->author = $_POST['author'];
+        $request->title = $_POST['title'];
         $request->publicationYear = $_POST['publicationYear'];
-        $available = isset($_POST['available']) ? (int)$_POST['available'] : 0;
-        $request->available = (int)$available;
+        $request->available = $_POST['available'];
+//        print_r($_POST);
+//        print_r($request);
         try {
             $this->bookService->updateBook($request);
             View::redirect('/books');

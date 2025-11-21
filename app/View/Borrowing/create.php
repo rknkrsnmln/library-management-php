@@ -15,9 +15,8 @@ use Library\PHP\MVC\Domain\User;
 // Check for the 'error' cookie and retrieve its value
 $errorMessage = $_COOKIE['error'] ?? null;
 
-// Optionally, clear the cookie after showing the error message
 if ($errorMessage) {
-    // Expire the cookie so it will be deleted
+    // Expiring the cookies here
     setcookie('error', '', time() - 3600, '/');  // Expired cookie to delete it
 }
 ?>
@@ -67,12 +66,18 @@ if ($errorMessage) {
 
     <div class="mb-3">
         <label for="return_date" class="form-label">Return Date (Must Be Filled)</label>
-        <input type="date" class="form-control" id="return_date" name="return_date">
+        <input type="date" class="form-control" id="return_date" name="return_date"
+               value="<?= date('Y-m-d', strtotime('+3 day')) ?>" required>
     </div>
 
-    <div class="mb-3 form-check">
-        <input type="checkbox" class="form-check-input" id="returned" name="returned" value="1">
-        <label class="form-check-label" for="returned">Returned</label>
+    <div class="form-check mb-3">
+        <label class="form-check-label">
+            <!-- Hidden input to send '0' if unchecked -->
+            <input type="hidden" name="returned" value="0">
+            <!-- Checkbox will send '1' if checked -->
+            <input type="checkbox" name="returned" class="form-check-input" value="1">
+            Returned
+        </label>
     </div>
 
     <button type="submit" class="btn btn-success">Create Borrowing</button>
