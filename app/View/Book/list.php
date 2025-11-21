@@ -9,6 +9,26 @@ use Library\PHP\MVC\Domain\Book;
 ?>
 <h1><?= $title ?? 'List of book' ?></h1>
 
+<?php
+// Check for the 'error' cookie and retrieve its value
+$errorMessage = $_COOKIE['error'] ?? null;
+
+// Optionally, clear the cookie after showing the error message
+if ($errorMessage) {
+    // Expire the cookie so it will be deleted
+    setcookie('error', '', time() - 3600, '/');  // Expired cookie to delete it
+}
+?>
+<!--Display the error message if it exists-->
+<?php if (isset($errorMessage) && !empty($errorMessage)): ?>
+    <div class="container mt-3">
+        <div id="error-message" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <strong>Error!</strong> <?= htmlspecialchars($errorMessage) ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    </div>
+<?php endif; ?>
+
 <a href="/books/add" class="btn btn-success mb-3">Add Book</a>
 <?php if (isset($books) && count($books) > 0): ?>
     <table class="table table-striped">

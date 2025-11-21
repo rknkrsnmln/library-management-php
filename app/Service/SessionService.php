@@ -12,7 +12,7 @@ use Library\PHP\MVC\Repository\UserRepository;
 class SessionService
 {
 
-    public static string $COOKIE_NAME = "X-PZN-SESSION";
+    public static string $COOKIE_NAME = "X-RKN-SESSION";
 
     private SessionRepository $sessionRepository;
     private UserRepository $userRepository;

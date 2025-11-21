@@ -91,7 +91,6 @@ class UserController
     public function updateProfile(): void
     {
         $user = $this->sessionService->current();
-
         View::renderNew('User/profile', [
             "title" => "Update user profile",
             "user" => [
@@ -127,10 +126,11 @@ class UserController
     public function updatePassword(): void
     {
         $user = $this->sessionService->current();
-        View::render('User/password', [
+        View::renderNew('User/password', [
             "title" => "Update user password",
             "user" => [
-                "id" => $user->id
+                "id" => $user->id,
+                "name" => $user->name
             ]
         ]);
     }
@@ -151,7 +151,8 @@ class UserController
                 "title" => "Update user password",
                 "error" => $exception->getMessage(),
                 "user" => [
-                    "id" => $user->id
+                    "id" => $user->id,
+                    "name" => $user->name
                 ]
             ]);
         }

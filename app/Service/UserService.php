@@ -201,4 +201,10 @@ class UserService
             throw new Exception("An error occurred while fetching all books: " . $e->getMessage());
         }
     }
+
+    public function findById(string $id): ?User
+    {
+        return $this->userRepository->findById($id);
+    }
+
 }
