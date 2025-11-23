@@ -16,36 +16,65 @@ class UserRepository
 
     public function save(User $user): User
     {
-        $statement = $this->connection->prepare("INSERT INTO users(id, name, password, role, status) VALUES (?, ?, ?, ?, ?)");
+        // Use named placeholders
+        $statement = $this->connection->prepare(
+            "INSERT INTO users (id, name, password, role, status) 
+             VALUES (:id, :name, :password, :role, :status)"
+        );
+
+        // Execute with named parameters
         $statement->execute([
-            $user->id, $user->name, $user->password, $user->role, $user->status
+            ':id' => $user->id,
+            ':name' => $user->name,
+            ':password' => $user->password,
+            ':role' => $user->role,
+            ':status' => $user->status
         ]);
+
         return $user;
     }
 
     public function update(User $user): User
     {
-        $statement = $this->connection->prepare("UPDATE users SET name = ?, password = ? WHERE id = ?");
+        // Named placeholders disini
+        $statement = $this->connection->prepare(
+            "UPDATE users 
+             SET name = :name, password = :password 
+             WHERE id = :id"
+        );
+
+        // Execute
         $statement->execute([
-            $user->name, $user->password, $user->id
+            ':name' => $user->name,
+            ':password' => $user->password,
+            ':id' => $user->id
         ]);
+
         return $user;
     }
 
     public function findById(string $id): ?User
     {
-        $statement = $this->connection->prepare("SELECT id, name, password, role, status FROM users WHERE id = ?");
-        $statement->execute([$id]);
+        // Named placeholders disini
+        $statement = $this->connection->prepare(
+            "SELECT id, name, password, role, status 
+             FROM users 
+             WHERE id = :id"
+        );
+
+        // Execute
+        $statement->execute([':id' => $id]);
 
         try {
             if ($row = $statement->fetch()) {
-                $user = new User();
-                $user->id = $row['id'];
-                $user->name = $row['name'];
-                $user->password = $row['password'];
-                $user->role = $row['role'];
-                $user->status = $row['status'];
-                return $user;
+//                $user = new User();
+//                $user->id = $row['id'];
+//                $user->name = $row['name'];
+//                $user->password = $row['password'];
+//                $user->role = $row['role'];
+//                $user->status = $row['status'];
+//                return $user;
+                return $this->getUser($row);
             } else {
                 return null;
             }

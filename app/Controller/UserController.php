@@ -32,7 +32,7 @@ class UserController
 
     public function register(): void
     {
-        View::render('User/register', [
+        View::renderNew('User/register', [
             'title' => 'Register new User'
         ]);
     }
@@ -59,7 +59,7 @@ class UserController
 
     public function login(): void
     {
-        View::render('User/login', [
+        View::renderNew('User/login', [
             "title" => "Login user"
         ]);
     }

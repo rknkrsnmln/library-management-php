@@ -6,14 +6,14 @@ use Throwable;
 
 set_exception_handler(function (Throwable $e) {
 
-    // Log the actual error for debugging
+    // Log error actual-nya
     error_log("Uncaught Throwable: " . $e->getMessage());
     error_log($e->getTraceAsString());
 
-    // Send proper HTTP 500 response
+    // HTTP 500 response
     http_response_code(500);
 
-    // Show safe error view
+    // Error view
     include __DIR__ . "/../View/Error/500.php";
     exit;
 });

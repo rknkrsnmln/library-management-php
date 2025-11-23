@@ -13,12 +13,10 @@ use Library\PHP\MVC\Middleware\MustBeLoggedInMiddleware;
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . "/../app/Bootstrap/error-handler.php";
 
+initializeUsers();
 
 // Connect to the database
 Database::getConnection('test');
-
-// Ensure users are created only once (check if the table is empty or the admin user exists)
-initializeUsers();
 
 // Home Controller
 Router::add('GET', '/', HomeController::class, 'index', []);
@@ -50,39 +48,43 @@ Router::add('GET', '/500', HomeController::class, 'fiveHundredResponse', []);
 
 Router::run();
 
-/**
- * Initializes users (creates admin and member) if no users exist in the database.
- */
+
 function initializeUsers(): void
 {
     try {
         $pdo = Database::getConnection('test');
-        // Check if users already exist by looking for any records in the users table
-        $stmt = $pdo->query("SELECT COUNT(*) FROM users");
-        $userCount = $stmt->fetchColumn();
 
-        // Only create users if the table is empty
-        if ($userCount == 0) {
-            // Call the createUser method to create default users (admin and member)
+        // Check if users table has any record
+        $stmt = $pdo->query("SELECT COUNT(*) FROM users");
+        $userCount = (int)$stmt->fetchColumn();
+
+        if ($userCount === 0) {
+
+            // Create default admin & member
             Database::createUser(
-                'admin_id',       // Admin User ID
-                'Admin User',     // Admin Name
-                'adminpassword',  // Admin Password (plain text, will be hashed)
-                'active',         // Status
-                'admin'           // Role
+                'admin_id',
+                'Admin User',
+                'adminpassword',
+                'active',
+                'admin'
             );
             Database::createUser(
-                'member_id',      // Member User ID
-                'Member User',    // Member Name
-                'memberpassword', // Member Password (plain text, will be hashed)
-                'active',         // Status
-                'member'          // Role
+                'member_id',
+                'Member User',
+                'memberpassword',
+                'active',
+                'member'
             );
-            echo "Default users created successfully!";
+
+            // Log informational message
+            error_log("[INIT] Default users created.");
         } else {
-            echo "Users already exist, skipping creation.";
+            // Log informational message
+            error_log("[INIT] Users already exist. Initialization skipped.");
         }
-    } catch (Exception $e) {
-        echo "Error while initializing users: " . $e->getMessage();
+
+    } catch (Throwable $e) {
+        // Let the global handler take over
+        throw $e;
     }
 }

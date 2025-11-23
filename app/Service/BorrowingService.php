@@ -108,7 +108,7 @@ class BorrowingService
         try {
             Database::beginTransaction();
 
-            $this->borrowingRepository->delete($id);
+            $this->borrowingRepository->deleteById($id);
 
             Database::commitTransaction();
         } catch (PDOException $e) {

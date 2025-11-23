@@ -16,36 +16,40 @@ class BookRepository
 
     /**
      * Find all books
-     * @return Book[] Returns an array of Book objects
+     * @return Book[]
      */
     public function findAllBook(): array
     {
         $statement = $this->connection->prepare("SELECT * FROM books");
         $statement->execute();
-        $booksData = $statement->fetchAll();
+
+        $rows = $statement->fetchAll(\PDO::FETCH_ASSOC);
+
         $books = [];
-        foreach ($booksData as $bookData) {
-            $books[] = $this->getBook($bookData);
+        foreach ($rows as $row) {
+            $books[] = $this->getBook($row);
         }
+
         return $books;
     }
 
     /**
      * Find a book by its ID.
-     * @param string $bookId
-     * @return Book|null
      */
     public function findBookById(string $bookId): ?Book
     {
-        $statement = $this->connection->prepare("SELECT * FROM books WHERE id = ?");
-        $statement->execute([$bookId]);
+        $statement = $this->connection->prepare(
+            "SELECT * FROM books WHERE id = :id"
+        );
+
+        $statement->execute([':id' => $bookId]);
 
         try {
-            if ($row = $statement->fetch()) {
+            if ($row = $statement->fetch(\PDO::FETCH_ASSOC)) {
                 return $this->getBook($row);
-            } else {
-                return null;
             }
+            return null;
+
         } finally {
             $statement->closeCursor();
         }
@@ -53,71 +57,79 @@ class BookRepository
 
     /**
      * Insert a new book into the database.
-     * @param Book $book
-     * @return Book The generated book
      */
     public function insertBook(Book $book): Book
     {
-        $statement = $this->connection->prepare("
-        INSERT INTO books(id, title, author, publication_year, available)
-        values (?,?,?,?,?)");
+        $statement = $this->connection->prepare(
+            "INSERT INTO books(
+                id, title, author, publication_year, available
+            ) VALUES (
+                :id, :title, :author, :publication_year, :available
+            )"
+        );
+
         $statement->execute([
-            $book->id,
-            $book->title,
-            $book->author,
-            $book->publicationYear,
-            $book->available
+            ':id' => $book->id,
+            ':title' => $book->title,
+            ':author' => $book->author,
+            ':publication_year' => $book->publicationYear,
+            ':available' => $book->available,
         ]);
+
         return $book;
     }
 
     /**
-     * @param mixed $row
-     * @return Book
+     * Hydrate Book object from row
      */
     private function getBook(array $row): Book
     {
         $book = new Book();
+        $book->id = $row['id'];
         $book->title = $row['title'];
         $book->author = $row['author'];
         $book->publicationYear = (int)$row['publication_year'];
         $book->available = (bool)$row['available'];
-        $book->id = $row['id'];
+
         return $book;
     }
 
     /**
-     * Delete a book by its ID, ensuring no borrowings exist for the book.
-     *
-     * @param string $bookId
-     * @return bool Returns true if the book was deleted, false otherwise
+     * Delete a book by its ID.
      */
-    public function deleteBook(string $bookId): bool
+    public function deleteBookById(string $bookId): bool
     {
-        $statement = $this->connection->prepare("DELETE FROM books WHERE id = ?");
-        $statement->execute([$bookId]);
+        $statement = $this->connection->prepare(
+            "DELETE FROM books WHERE id = :id"
+        );
+
+        $statement->execute([':id' => $bookId]);
+
         return $statement->rowCount() > 0;
     }
 
     /**
-     * Update an existing book in the database.
-     *
-     * @param Book $book
-     * @return Book Returns the updated book
+     * Update an existing book.
      */
     public function updateBook(Book $book): Book
     {
-        $statement = $this->connection->prepare("UPDATE books 
-                SET title = ?, author = ?, publication_year = ?, available = ? 
-                WHERE id = ?");
+        $statement = $this->connection->prepare(
+            "UPDATE books
+             SET title = :title,
+                 author = :author,
+                 publication_year = :publication_year,
+                 available = :available
+             WHERE id = :id"
+        );
+
         $statement->execute([
-            $book->title,
-            $book->author,
-            $book->publicationYear,
-            $book->available,
-            $book->id
+            ':title' => $book->title,
+            ':author' => $book->author,
+            ':publication_year' => $book->publicationYear,
+            ':available' => $book->available,
+            ':id' => $book->id,
         ]);
-//        return $this->getBook($book);
+
         return $book;
     }
 }
