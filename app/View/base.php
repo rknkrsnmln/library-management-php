@@ -33,6 +33,9 @@
                     <li class="nav-item">
                         <a class="nav-link" href="/borrowings/create">Lending Form</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/users/logout">Logout</a>
+                    </li>
                 </ul>
             </div>
         </div>

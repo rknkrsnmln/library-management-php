@@ -6,6 +6,7 @@ use Exception;
 use Library\PHP\MVC\Config\Database;
 use Library\PHP\MVC\Domain\Book;
 use Library\PHP\MVC\Model\BookRequest;
+use Library\PHP\MVC\Model\BookResponse;
 use Library\PHP\MVC\Model\BookUpdateRequest;
 use Library\PHP\MVC\Repository\BookRepository;
 use PDOException;
@@ -52,11 +53,11 @@ class BookService
     /**
      * Add a new book.
      * @param BookRequest $bookRequest
-     * @return Book
+     * @return BookResponse
      * @throws Exception
      * @throws Throwable
      */
-    public function addBook(BookRequest $bookRequest): Book
+    public function addBook(BookRequest $bookRequest): BookResponse
     {
         try {
             Database::beginTransaction();
@@ -66,9 +67,13 @@ class BookService
             $book->author = $bookRequest->author;
             $book->publicationYear = $bookRequest->publicationYear;
             $book->available = $bookRequest->available;
-            $saved = $this->bookRepository->insertBook($book);
+            $this->bookRepository->insertBook($book);
+
+            $response = new BookResponse();
+            $response->book = $book;
+
             Database::commitTransaction();
-            return $saved;
+            return $response;
         } catch (PDOException $e) {
             Database::rollBackTransaction();
             throw new Exception("Error adding book '{$bookRequest->title}'", 0, $e);
@@ -90,7 +95,7 @@ class BookService
         try {
             Database::beginTransaction();
 
-            $deleted = $this->bookRepository->deleteBook($bookId);
+            $deleted = $this->bookRepository->deleteBookById($bookId);
 
             Database::commitTransaction();
             return $deleted;

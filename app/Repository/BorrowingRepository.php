@@ -16,87 +16,100 @@ class BorrowingRepository
 
     public function create(Borrowing $borrowing): Borrowing
     {
-        $statement = $this->connection->prepare("INSERT INTO borrowings (id, user_id, book_id, borrow_date, return_date, returned) 
-            VALUES (?,?, ?, ?,?, ?)");
+        $statement = $this->connection->prepare(
+            "INSERT INTO borrowings (
+            id, user_id, book_id, borrow_date, return_date, returned
+        ) VALUES (
+            :id, :user_id, :book_id, :borrow_date, :return_date, :returned
+        )"
+        );
+
         $statement->execute([
-            $borrowing->id,
-            $borrowing->userId,
-            $borrowing->bookId,
-            $borrowing->borrowDate,
-            $borrowing->returnDate,
-            $borrowing->returned
+            ':id' => $borrowing->id,
+            ':user_id' => $borrowing->userId,
+            ':book_id' => $borrowing->bookId,
+            ':borrow_date' => $borrowing->borrowDate,
+            ':return_date' => $borrowing->returnDate,
+            ':returned' => $borrowing->returned,
         ]);
+
         return $borrowing;
     }
 
     public function update(Borrowing $borrowing): void
     {
-        $query = "UPDATE borrowings 
-                  SET user_id = :user_id, book_id = :book_id, borrow_date = :borrow_date, 
-                      return_date = :return_date, returned = :returned 
-                  WHERE id = :id";
+        $statement = $this->connection->prepare(
+            "UPDATE borrowings
+         SET user_id = :user_id,
+             book_id = :book_id,
+             borrow_date = :borrow_date,
+             return_date = :return_date,
+             returned = :returned
+         WHERE id = :id"
+        );
 
-        $stmt = $this->connection->prepare($query);
-
-        $stmt->bindParam(':id', $borrowing->id);
-        $stmt->bindParam(':user_id', $borrowing->userId);
-        $stmt->bindParam(':book_id', $borrowing->bookId);
-        $stmt->bindParam(':borrow_date', $borrowing->borrowDate);
-        $stmt->bindParam(':return_date', $borrowing->returnDate);
-        $stmt->bindParam(':returned', $borrowing->returned, PDO::PARAM_BOOL);
-
-        $stmt->execute();
+        $statement->execute([
+            ':id' => $borrowing->id,
+            ':user_id' => $borrowing->userId,
+            ':book_id' => $borrowing->bookId,
+            ':borrow_date' => $borrowing->borrowDate,
+            ':return_date' => $borrowing->returnDate,
+            ':returned' => $borrowing->returned,
+        ]);
     }
 
-    public function delete(string $id): void
+    public function deleteById(string $id): void
     {
         $query = "DELETE FROM borrowings WHERE id = ?";
-        $stmt = $this->connection->prepare($query);
-        $stmt->execute([$id]);
+        $statement = $this->connection->prepare($query);
+        $statement->execute([$id]);
     }
 
     public function findById(string $id): ?Borrowing
     {
-        $query = "SELECT * FROM borrowings WHERE id = :id";
-        $stmt = $this->connection->prepare($query);
-        $stmt->bindParam(':id', $id);
-        $stmt->execute();
+        $statement = $this->connection->prepare(
+            "SELECT * FROM borrowings WHERE id = :id"
+        );
 
-        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        // Execute using named placeholder array
+        $statement->execute([':id' => $id]);
 
-        if ($result) {
-            $returnedBorrowing = new Borrowing();
-            $returnedBorrowing->id = $result["id"];
-            $returnedBorrowing->userId = $result["user_id"];
-            $returnedBorrowing->bookId = $result["book_id"];
-            $returnedBorrowing->borrowDate = $result["borrow_date"];
-            $returnedBorrowing->returnDate = $result["return_date"];
-            $returnedBorrowing->returned = $result["returned"];
-            return $returnedBorrowing;
+        try {
+            if ($row = $statement->fetch(PDO::FETCH_ASSOC)) {
+                return $this->getBorrowing($row);
+            } else {
+                return null;
+            }
+        } finally {
+            $statement->closeCursor();
         }
-
-        return null;
     }
 
     public function findAll(): array
     {
-        $query = "SELECT * FROM borrowings";
-        $stmt = $this->connection->query($query);
-        $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $statement = $this->connection->prepare("SELECT * FROM borrowings");
+        $statement->execute();
+
+        $rows = $statement->fetchAll(PDO::FETCH_ASSOC);
 
         $borrowings = [];
-        foreach ($results as $result) {
-            $borrowing = new Borrowing();
-            $borrowing->id = $result['id'];
-            $borrowing->userId = $result['user_id'];
-            $borrowing->bookId = $result['book_id'];
-            $borrowing->borrowDate = $result['borrow_date'];
-            $borrowing->returnDate = $result['return_date'];
-            $borrowing->returned = $result['returned'];
-            $borrowings[] = $borrowing;
+        foreach ($rows as $row) {
+            $borrowings[] = $this->getBorrowing($row);
         }
 
         return $borrowings;
+    }
+
+    private function getBorrowing(array $row): Borrowing
+    {
+        $borrowing = new Borrowing();
+        $borrowing->id = $row["id"];
+        $borrowing->userId = $row["user_id"];
+        $borrowing->bookId = $row["book_id"];
+        $borrowing->borrowDate = $row["borrow_date"];
+        $borrowing->returnDate = $row["return_date"];
+        $borrowing->returned = $row["returned"];
+        return $borrowing;
     }
 
 }

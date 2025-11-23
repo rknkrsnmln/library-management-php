@@ -100,10 +100,10 @@ class BookController
     public function postAddBook(): void
     {
         $request = new BookRequest();
-        $request->title = $_POST['title'];
-        $request->author = $_POST['author'];
-        $request->publicationYear = $_POST['publicationYear'];
-        $request->available = $_POST['available'] ?? true;
+        $request->title = trim($_POST['title'] ?? '');
+        $request->author = trim($_POST['author'] ?? '');
+        $request->publicationYear = isset($_POST['publicationYear']) ? (int)$_POST['publicationYear'] : null;
+        $request->available = isset($_POST['available']);
 
         try {
             $this->bookService->addBook($request);

@@ -20,10 +20,10 @@ class View
         $layout = __DIR__ . '/../View/base.php';
 
 
-        // Extract variables for the view
+        // Extract variables untuk diberikan ke view
         extract($model);
 
-        // This variable is passed to layout and included inside it
+        // Variable $content yang akan dimasukan didalam view template
         $content = $viewFile;
 
         require $layout;
@@ -39,7 +39,7 @@ class View
 
     public static function redirectError(string $url, string $errorMessage = ''): void
     {
-        // Set the 'error' cookie if an error message is provided
+        // Nge-set cookie 'error' jika ada error dan berikan pesan errornya
         session_start();
         if ($errorMessage) {
             setcookie('error', $errorMessage, time() + 3600, '/');  // 1 hour expiration
